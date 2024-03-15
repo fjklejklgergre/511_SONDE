@@ -15,17 +15,19 @@ import (
 	"github.com/shirou/gopsutil/host"
 )
 
+// Structure pour stocker les informations système
 type SystemInfo struct {
-	Hostname      string
-	IP            string
-	FreeRAM       float64
-	UsedRAM       float64
-	CPUPercentage float64
-	FreeDiskSpace float64
+	Hostname      string  // Nom d'hôte
+	IP            string  // Adresse IP
+	FreeRAM       float64 // RAM libre (en Go)
+	UsedRAM       float64 // RAM utilisée (en Go)
+	CPUPercentage float64 // Pourcentage d'utilisation du CPU
+	FreeDiskSpace float64 // Espace disque libre (en Go)
 }
 
+// Fonction pour collecter les informations système
 func collectSystemInfo() SystemInfo {
-	// Collect hostname and IP information
+	// Collecte des informations sur le nom d'hôte et l'adresse IP
 	hostInfo, _ := host.Info()
 	interfaces, _ := net.Interfaces()
 
@@ -40,34 +42,34 @@ func collectSystemInfo() SystemInfo {
 		}
 	}
 
-	// Collect RAM information
+	// Collecte des informations sur la RAM
 	vm, _ := mem.VirtualMemory()
 
-	// Collect CPU information
+	// Collecte des informations sur le CPU
 	cpuPercent, _ := cpu.Percent(0, false)
 
-	// Collect Disk information
+	// Collecte des informations sur le disque
 	diskStat, _ := disk.Usage("/")
 
 	return SystemInfo{
 		Hostname:      hostInfo.Hostname,
 		IP:            ipAddress,
-		FreeRAM:       float64(vm.Free) / 1024 / 1024 / 1024, // convert to GB
-		UsedRAM:       float64(vm.Used) / 1024 / 1024 / 1024, // convert to GB
+		FreeRAM:       float64(vm.Free) / 1024 / 1024 / 1024, // Conversion en Go
+		UsedRAM:       float64(vm.Used) / 1024 / 1024 / 1024, // Conversion en Go
 		CPUPercentage: cpuPercent[0],
-		FreeDiskSpace: float64(diskStat.Free) / 1024 / 1024 / 1024, // convert to GB
+		FreeDiskSpace: float64(diskStat.Free) / 1024 / 1024 / 1024, // Conversion en Go
 	}
 }
 
 func main() {
-	fmt.Print("Enter the server IP address: ")
+	fmt.Print("Entrez l'adresse IP du serveur : ")
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	serverAddr := scanner.Text()
 
 	conn, err := net.Dial("tcp", serverAddr+":8080")
 	if err != nil {
-		fmt.Println("Error connecting to the server:", err)
+		fmt.Println("Erreur lors de la connexion au serveur :", err)
 		return
 	}
 	defer conn.Close()
@@ -78,10 +80,10 @@ func main() {
 		info := collectSystemInfo()
 		err := encoder.Encode(info)
 		if err != nil {
-			fmt.Println("Error encoding and sending data:", err)
+			fmt.Println("Erreur lors de l'encodage et de l'envoi des données :", err)
 			return
 		}
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(5 * time.Second) // Attente de 5 secondes avant de collecter à nouveau les informations
 	}
 }

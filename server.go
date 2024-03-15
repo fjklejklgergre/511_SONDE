@@ -9,64 +9,73 @@ import (
   "os"
 )
 
+// Structure pour stocker les informations système
 type SystemInfo struct {
-  Hostname   string `json:"hostname"`
-  IP      string `json:"ip"`
-  FreeRAM    float64 `json:"free_ram"`
-  UsedRAM    float64 `json:"used_ram"`
-  CPUPercentage float64 `json:"cpu_percentage"`
-  FreeDiskSpace float64 `json:"free_disk_space"`
+  Hostname      string  `json:"hostname"`       // Nom d'hôte de la machine
+  IP            string  `json:"ip"`             // Adresse IP de la machine
+  FreeRAM       float64 `json:"free_ram"`       // RAM libre en Go
+  UsedRAM       float64 `json:"used_ram"`       // RAM utilisée en Go
+  CPUPercentage float64 `json:"cpu_percentage"` // Pourcentage d'utilisation du CPU
+  FreeDiskSpace float64 `json:"free_disk_space"`// Espace disque libre en Go
 }
 
+// Fonction pour collecter les informations système
 func collectSystemInfo() SystemInfo {
   hostInfo, _ := os.Hostname()
   ipAddress, _ := externalIP()
 
-  vm, _ := getRAMInfo()
-  cpuPercent, _ := getCPUInfo()
-  diskStat, _ := getDiskInfo()
+  vm, _ := getRAMInfo()      // Obtenir les informations sur la RAM
+  cpuPercent, _ := getCPUInfo() // Obtenir les informations sur le CPU
+  diskStat, _ := getDiskInfo()  // Obtenir les informations sur le disque
 
   return SystemInfo{
-    Hostname:   hostInfo,
-    IP:      ipAddress,
-    FreeRAM:    float64(vm.Free) / 1024 / 1024 / 1024,
-    UsedRAM:    float64(vm.Used) / 1024 / 1024 / 1024,
+    Hostname:      hostInfo,
+    IP:            ipAddress,
+    FreeRAM:       float64(vm.Free) / 1024 / 1024 / 1024,
+    UsedRAM:       float64(vm.Used) / 1024 / 1024 / 1024,
     CPUPercentage: cpuPercent,
     FreeDiskSpace: float64(diskStat.Free) / 1024 / 1024 / 1024,
   }
 }
 
+// Fonction pour obtenir les informations sur la RAM
 func getRAMInfo() (*MemoryInfo, error) {
-  // ImplÃ©mentation pour obtenir les informations sur la RAM
+  // Implémentation pour obtenir les informations sur la RAM
   return nil, nil
 }
 
+// Fonction pour obtenir les informations sur le CPU
 func getCPUInfo() (float64, error) {
-  // ImplÃ©mentation pour obtenir les informations sur le CPU
+  // Implémentation pour obtenir les informations sur le CPU
   return 0.0, nil
 }
 
+// Fonction pour obtenir les informations sur le disque
 func getDiskInfo() (*DiskInfo, error) {
-  // ImplÃ©mentation pour obtenir les informations sur le disque
+  // Implémentation pour obtenir les informations sur le disque
   return nil, nil
 }
 
+// Structure pour stocker les informations sur la mémoire
 type MemoryInfo struct {
   Total uint64
-  Used uint64
-  Free uint64
+  Used  uint64
+  Free  uint64
 }
 
+// Structure pour stocker les informations sur le disque
 type DiskInfo struct {
   Total uint64
-  Free uint64
+  Free  uint64
 }
 
+// Fonction pour obtenir l'adresse IP externe
 func externalIP() (string, error) {
-  // ImplÃ©mentation pour obtenir l'adresse IP externe
+  // Implémentation pour obtenir l'adresse IP externe
   return "", nil
 }
 
+// Fonction pour gérer les connexions entrantes
 func handleConnection(conn net.Conn) {
   defer conn.Close()
 
@@ -87,7 +96,7 @@ func handleConnection(conn net.Conn) {
       continue
     }
 
-    // Actualiser les donnÃ©es JSON dans le fichier
+    // Actualiser les données JSON dans le fichier
     err = updateJSONInFile(jsonData, "/var/www/html/received_data.json")
     if err != nil {
       fmt.Println("Error updating JSON data in file:", err)
@@ -98,8 +107,9 @@ func handleConnection(conn net.Conn) {
   }
 }
 
+// Fonction pour mettre à jour les données JSON dans le fichier
 func updateJSONInFile(newData []byte, filePath string) error {
-  // Lire les donnÃ©es JSON existantes
+  // Lire les données JSON existantes
   existingData, err := ioutil.ReadFile(filePath)
   if err != nil && !os.IsNotExist(err) {
     return err
@@ -110,10 +120,10 @@ func updateJSONInFile(newData []byte, filePath string) error {
     newData = append([]byte("\n"), newData...)
   }
 
-  // Ajouter les nouvelles donnÃ©es JSON Ã la fin des donnÃ©es existantes
+  // Ajouter les nouvelles données JSON à la fin des données existantes
   updatedData := append(existingData, newData...)
 
-  // RÃ©Ã©crire le fichier avec les donnÃ©es mises Ã jour
+  // Réécrire le fichier avec les données mises à jour
   err = ioutil.WriteFile(filePath, updatedData, 0644)
   if err != nil {
     return err
@@ -122,6 +132,7 @@ func updateJSONInFile(newData []byte, filePath string) error {
   return nil
 }
 
+// Fonction principale
 func main() {
   listenAddr := ":8080"
   ln, err := net.Listen("tcp", listenAddr)
@@ -142,10 +153,11 @@ func main() {
       continue
     }
 
-    go handleConnection(conn)
+    go handleConnection(conn) // Gérer la connexion dans une goroutine
   }
 }
 
+// Fonction pour obtenir l'adresse IP sortante
 func getOutboundIP() string {
   conn, err := net.Dial("udp", "8.8.8.8:80")
   if err != nil {
